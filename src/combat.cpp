@@ -175,11 +175,7 @@ ReturnValue Combat::canDoCombat(Creature* caster, Tile* tile, bool aggressive)
 		return RETURNVALUE_NOTENOUGHROOM;
 	}
 
-	/*if (tile->hasProperty(CONST_PROP_IMMOVABLEBLOCKSOLID) && tile->hasProperty(CONST_PROP_UNLAY)) {
-		return RETURNVALUE_NOTENOUGHROOM;
-	}*/
-
-	if (tile->hasProperty(CONST_PROP_IMMOVABLEBLOCKPATH) && tile->hasProperty(CONST_PROP_IMMOVABLENOFIELDBLOCKPATH)) {
+	if (tile->hasProperty(CONST_PROP_IMMOVABLEBLOCKSOLID) && tile->hasProperty(CONST_PROP_UNLAY)) {
 		return RETURNVALUE_NOTENOUGHROOM;
 	}
 
@@ -834,7 +830,7 @@ bool Combat::attack(Creature* attacker, Creature* target)
 	return false;
 }
 
-bool Combat::closeAttack(Creature* attacker, Creature* target, fightMode_t fightMode, bool fist)
+bool Combat::closeAttack(Creature* attacker, Creature* target, fightMode_t fightMode)
 {
 	const Position& attackerPos = attacker->getPosition();
 	const Position& targetPos = target->getPosition();
@@ -859,7 +855,7 @@ bool Combat::closeAttack(Creature* attacker, Creature* target, fightMode_t fight
 	uint32_t skillValue = 0;
 	uint8_t skill = SKILL_FIST;
 
-	Combat::getAttackValue(attacker, attackValue, skillValue, skill, fist);
+	Combat::getAttackValue(attacker, attackValue, skillValue, skill);
 
 	int32_t defense = target->getDefense();
 
@@ -962,9 +958,9 @@ bool Combat::rangeAttack(Creature* attacker, Creature* target, fightMode_t fight
 		if (weapon->getWeaponType() == WEAPON_DISTANCE) {
 			ammunition = player->getAmmunition();
 			if (weapon->getAmmoType() != AMMO_NONE) {
-				if (!ammunition || ammunition->getWeaponType() != WEAPON_AMMO || weapon->getAmmoType() != ammunition->getAmmoType()) {
+				if (!ammunition || weapon->getAmmoType() != ammunition->getAmmoType()) {
 					// redirect to fist fighting
-					return closeAttack(attacker, target, fightMode, true);
+					return closeAttack(attacker, target, fightMode);
 				}
 
 				distanceEffect = ammunition->getMissileType();
@@ -1011,7 +1007,7 @@ bool Combat::rangeAttack(Creature* attacker, Creature* target, fightMode_t fight
 			}
 		}
 
-		if (ammunition && ammunition->getWeaponType() == WEAPON_AMMO && weapon->getAmmoType() != AMMO_NONE && weapon->getAmmoType() == ammunition->getAmmoType()) {
+		if (ammunition && weapon->getAmmoType() != AMMO_NONE && weapon->getAmmoType() == ammunition->getAmmoType()) {
 			hitChance = 90; // bows and crossbows
 			specialEffect = ammunition->getWeaponSpecialEffect();
 			attackStrength = ammunition->getAttackStrength();
@@ -1182,13 +1178,13 @@ void Combat::circleShapeSpell(Creature* attacker, const Position& toPos, int32_t
 	}
 }
 
-void Combat::getAttackValue(Creature* creature, uint32_t& attackValue, uint32_t& skillValue, uint8_t& skill, bool fist)
+void Combat::getAttackValue(Creature* creature, uint32_t& attackValue, uint32_t& skillValue, uint8_t& skill)
 {
 	skill = SKILL_FIST;
 
 	if (Player* player = creature->getPlayer()) {
 		Item* weapon = player->getWeapon();
-		if (weapon && !fist) {
+		if (weapon) {
 			switch (weapon->getWeaponType()) {
 			case WEAPON_AXE: {
 				skill = SKILL_AXE;

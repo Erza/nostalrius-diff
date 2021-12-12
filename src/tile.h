@@ -172,9 +172,9 @@ class Tile : public Cylinder
 		BedItem* getBedItem() const;
 
 		Creature* getTopCreature() const;
-		const Creature* getBottomCreature() const;
+		Creature* getBottomCreature() const;
 		Creature* getTopVisibleCreature(const Creature* creature) const;
-		const Creature* getBottomVisibleCreature(const Creature* creature) const;
+		Creature* getBottomVisibleCreature(const Creature* creature) const;
 		Item* getTopTopItem() const;
 		Item* getTopDownItem() const;
 		bool isMoveableBlocking() const;
@@ -219,6 +219,7 @@ class Tile : public Cylinder
 			}
 		}
 
+		int32_t getHeight() const;
 		bool hasHeight(uint32_t n) const;
 
 		std::string getDescription(int32_t lookDistance) const final;

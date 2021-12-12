@@ -81,8 +81,7 @@ function onStepIn(creature, item, position, fromPosition)
 		return false
 	end
 	
-	doRelocate(position, relPos)
-
+	creature:teleportTo(relPos)
 	if item:getId() == 293 then
 		item:transform(294)
 		item:decay()

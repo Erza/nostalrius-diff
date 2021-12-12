@@ -263,8 +263,6 @@ int32_t Player::getDefense()
 			default:
 				break;
 		}
-
-		defenseSkill = getSkillLevel(defenseSkill);
 	}
 
 	if (shield) {
@@ -549,7 +547,6 @@ bool Player::canSeeCreature(const Creature* creature) const
 	if (!creature->getPlayer() && !canSeeInvisibility() && creature->isInvisible()) {
 		return false;
 	}
-
 	return true;
 }
 
@@ -1732,7 +1729,8 @@ void Player::death(Creature* lastHitCreature)
 					loginPosition = getTemplePosition();
 
 					// Restart first items
-					addStorageValue(30017, 1);
+					lastLoginSaved = 0;
+					lastLogout = 0;
 
 					// Restart items
 					for (int32_t slot = CONST_SLOT_FIRST; slot <= CONST_SLOT_LAST; slot++)
@@ -2299,13 +2297,11 @@ Cylinder* Player::queryDestination(int32_t& index, const Thing& thing, Item** de
 					n--;
 				}
 
-				if (g_config.getBoolean(ConfigManager::QUERY_PLAYER_CONTAINERS)) {
-					for (Item* tmpContainerItem : tmpContainer->getItemList()) {
-						if (Container* subContainer = tmpContainerItem->getContainer()) {
-							containers.push_back(subContainer);
-						}
+				/*for (Item* tmpContainerItem : tmpContainer->getItemList()) {
+					if (Container* subContainer = tmpContainerItem->getContainer()) {
+						containers.push_back(subContainer);
 					}
-				}
+				}*/
 
 				continue;
 			}
@@ -2328,11 +2324,9 @@ Cylinder* Player::queryDestination(int32_t& index, const Thing& thing, Item** de
 					return tmpContainer;
 				}
 
-				if (g_config.getBoolean(ConfigManager::QUERY_PLAYER_CONTAINERS)) {
-					if (Container* subContainer = tmpItem->getContainer()) {
-						containers.push_back(subContainer);
-					}
-				}
+				/*if (Container* subContainer = tmpItem->getContainer()) {
+					containers.push_back(subContainer);
+				}*/
 
 				n++;
 			}

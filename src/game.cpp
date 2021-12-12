@@ -213,7 +213,7 @@ Thing* Game::internalGetThing(Player* player, const Position& pos, int32_t index
 				if (item && item->isMoveable()) {
 					thing = item;
 				} else {
-					thing = tile->getTopVisibleCreature(player);
+					thing = tile->getBottomVisibleCreature(player);
 				}
 				break;
 			}
@@ -229,7 +229,7 @@ Thing* Game::internalGetThing(Player* player, const Position& pos, int32_t index
 			}
 
 			case STACKPOS_USETARGET: {
-				thing = tile->getTopCreature();
+				thing = tile->getBottomCreature();
 				if (!thing) {
 					thing = tile->getUseItem();
 				}
