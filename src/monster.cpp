@@ -744,12 +744,23 @@ void Monster::setIdle(bool idle)
 
 void Monster::updateIdleStatus()
 {
-	bool idle = false;
+	bool idle = true;
 
-	if (conditions.empty()) {
-		if (!isSummon() && targetList.empty()) {
-			idle = true;
+	if (!isSummon()) {
+		if (!targetList.empty()) {
+			// visible target
+			idle = false;
+		} else {
+			for (Condition* condition : conditions) {
+				if (condition->getType() >= CONDITION_ENERGY && condition->getType() <= CONDITION_ENERGY) {
+					// monsters with aggressive conditions never become idle
+					idle = false;
+					break;
+				}
+			}
 		}
+	} else {
+		idle = false;
 	}
 
 	setIdle(idle);
@@ -876,7 +887,7 @@ void Monster::doAttacking(uint32_t)
 
 	for (spellBlock_t& spellBlock : mType->info.attackSpells) {
 		if (spellBlock.range != 0 && std::max<uint32_t>(Position::getDistanceX(myPos, targetPos), Position::getDistanceY(myPos, targetPos)) <= spellBlock.range) {
-			if (normal_random(0, spellBlock.chance) == 0 && (master || health > mType->info.runAwayHealth || normal_random(1, 3) == 1)) {
+			if (uniform_random(0, spellBlock.chance) == 0 && (master || health > mType->info.runAwayHealth || uniform_random(1, 3) == 1)) {
 				updateLookDirection();
 
 				minCombatValue = spellBlock.minCombatValue;
@@ -977,7 +988,7 @@ void Monster::onThinkTarget(uint32_t interval)
 void Monster::onThinkDefense(uint32_t)
 {
 	for (const spellBlock_t& spellBlock : mType->info.defenseSpells) {
-		if (normal_random(0, spellBlock.chance) == 0 && (master || health > mType->info.runAwayHealth || normal_random(1, 3) == 1)) {
+		if (uniform_random(0, spellBlock.chance) == 0 && (master || health > mType->info.runAwayHealth || uniform_random(1, 3) == 1)) {
 			minCombatValue = spellBlock.minCombatValue;
 			maxCombatValue = spellBlock.maxCombatValue;
 			spellBlock.spell->castSpell(this, this);
@@ -1001,7 +1012,7 @@ void Monster::onThinkDefense(uint32_t)
 				continue;
 			}
 
-			if (normal_random(0, summonBlock.chance) == 0 && (health > mType->info.runAwayHealth || normal_random(1, 3) == 1)) {
+			if (uniform_random(0, summonBlock.chance) == 0 && (health > mType->info.runAwayHealth || uniform_random(1, 3) == 1)) {
 				Monster* summon = Monster::createMonster(summonBlock.name);
 				if (summon) {
 					const Position& summonPos = getPosition();
@@ -1950,7 +1961,7 @@ bool Monster::isInSpawnRange(const Position& pos) const
 	}
 
 	if (!Spawns::isInZone(masterPos, Monster::despawnRadius, pos)) {
-		return true;
+		return false;
 	}
 
 	if (Monster::despawnRange == 0) {
@@ -1958,7 +1969,7 @@ bool Monster::isInSpawnRange(const Position& pos) const
 	}
 
 	if (Position::getDistanceZ(pos, masterPos) > Monster::despawnRange) {
-		return true;
+		return false;
 	}
 
 	return true;
@@ -2004,25 +2015,25 @@ void Monster::updateLookDirection()
 		} else {
 			Direction dir = getDirection();
 			if (offsetx < 0 && offsety < 0) {
-				if (dir == DIRECTION_SOUTH) {
+				if (dir == DIRECTION_SOUTH || dir == DIRECTION_NORTH) {
 					newDir = DIRECTION_WEST;
 				} else if (dir == DIRECTION_EAST) {
 					newDir = DIRECTION_NORTH;
 				}
 			} else if (offsetx < 0 && offsety > 0) {
-				if (dir == DIRECTION_NORTH) {
+				if (dir == DIRECTION_NORTH || dir == DIRECTION_SOUTH) {
 					newDir = DIRECTION_WEST;
 				} else if (dir == DIRECTION_EAST) {
 					newDir = DIRECTION_SOUTH;
 				}
 			} else if (offsetx > 0 && offsety < 0) {
-				if (dir == DIRECTION_SOUTH) {
+				if (dir == DIRECTION_SOUTH || dir == DIRECTION_NORTH) {
 					newDir = DIRECTION_EAST;
 				} else if (dir == DIRECTION_WEST) {
 					newDir = DIRECTION_NORTH;
 				}
 			} else {
-				if (dir == DIRECTION_NORTH) {
+				if (dir == DIRECTION_NORTH || dir == DIRECTION_SOUTH) {
 					newDir = DIRECTION_EAST;
 				} else if (dir == DIRECTION_WEST) {
 					newDir = DIRECTION_SOUTH;

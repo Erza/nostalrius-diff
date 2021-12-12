@@ -72,26 +72,6 @@ bool Tile::hasProperty(const Item* exclude, ITEMPROPERTY prop) const
 	return false;
 }
 
-int32_t Tile::getHeight() const {
-	uint32_t height = 0;
-
-	if (ground) {
-		if (ground->hasProperty(CONST_PROP_HASHEIGHT)) {
-			++height;
-		}
-	}
-
-	if (const TileItemVector* items = getItemList()) {
-		for (const Item* item : *items) {
-			if (item->hasProperty(CONST_PROP_HASHEIGHT)) {
-				++height;
-			}
-		}
-	}
-
-	return height;
-}
-
 bool Tile::hasHeight(uint32_t n) const
 {
 	uint32_t height = 0;
@@ -243,7 +223,7 @@ Creature* Tile::getTopCreature() const
 	return nullptr;
 }
 
-Creature* Tile::getBottomCreature() const
+const Creature* Tile::getBottomCreature() const
 {
 	if (const CreatureVector* creatures = getCreatures()) {
 		if (!creatures->empty()) {
@@ -281,7 +261,7 @@ Creature* Tile::getTopVisibleCreature(const Creature* creature) const
 	return nullptr;
 }
 
-Creature* Tile::getBottomVisibleCreature(const Creature* creature) const
+const Creature* Tile::getBottomVisibleCreature(const Creature* creature) const
 {
 	if (const CreatureVector* creatures = getCreatures()) {
 		if (creature) {
@@ -451,8 +431,6 @@ ReturnValue Tile::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t flags
 			return RETURNVALUE_NOTPOSSIBLE;
 		}
 
-		const Tile* fromTile = creature->getTile();
-
 		if (const Monster* monster = creature->getMonster()) {
 			if (hasFlag(TILESTATE_PROTECTIONZONE | TILESTATE_TELEPORT)) {
 				return RETURNVALUE_NOTPOSSIBLE;
@@ -552,20 +530,6 @@ ReturnValue Tile::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t flags
 					(!playerTile->hasFlag(TILESTATE_PROTECTIONZONE) && hasFlag(TILESTATE_PROTECTIONZONE))) {
 					// player is trying to enter a non-pvp/protection zone while being pz-locked
 					return RETURNVALUE_PLAYERISPZLOCKED;
-				}
-			}
-
-			if (fromTile) {
-				const Position& fromPosition = creature->getPosition();
-				if (fromPosition.z == getPosition().z) {
-					int32_t height = getHeight();
-					int32_t fromHeight = fromTile->getHeight();
-
-					if (fromHeight < height) {
-						if (std::abs(fromHeight - height) != 1) {
-							return RETURNVALUE_NOTPOSSIBLE;
-						}
-					}
 				}
 			}
 		} else if (creatures && !creatures->empty() && !hasBitSet(FLAG_IGNOREBLOCKCREATURE, flags)) {
